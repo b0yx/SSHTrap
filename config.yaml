@@ -1,4 +1,4 @@
-address: "0.0.0.0"
+address: "127.0.0.1"
 port: 22
 host_key_file: "host_key"
 username: "admin"

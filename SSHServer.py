@@ -7,6 +7,8 @@ from cmd import Cmd
 from abc import ABC, abstractmethod
 import yaml
 import os
+from datetime import datetime
+from getpass import getuser
 
 # Configure logging
 logging.basicConfig(
@@ -18,41 +20,106 @@ logger = logging.getLogger(__name__)
 
 
 class Shell(Cmd):
-    """Custom shell interface for authenticated SSH clients."""
+    """Professional Interactive Shell Interface for Secure Sessions"""
 
-    intro = "Welcome to My Shell. Type help or ? to list commands.\n"
+    intro = "\n[+] Welcome to Professional Shell\n[+] Type 'help' or '?' to list commands\n"
     use_rawinput = False
-    prompt = "Shell> "
+    prompt = "\033[1;32mShell> \033[0m"  # Green-colored prompt
 
     def __init__(self, stdin=None, stdout=None):
         super(Shell, self).__init__(completekey="tab", stdin=stdin, stdout=stdout)
 
-    def print(self, value):
-        """Write output to the client."""
+    def safe_print(self, value):
+        """Safe print to stdout."""
         if self.stdout and not self.stdout.closed:
-            self.stdout.write(value)
-            self.stdout.flush()
+            try:
+                self.stdout.write(value + "\n")
+                self.stdout.flush()
+            except IOError:
+                pass  # Handle broken pipe errors silently
 
-    def printline(self, value):
-        """Write a line of output to the client."""
-        self.print(value + "\r\n")
+    def do_echo(self, arg):
+        """Repeats the user input."""
+        self.safe_print(arg if arg else "Usage: echo <message>")
 
-    def do_greet(self, arg):
-        """Greet the user."""
-        if arg:
-            self.printline(f"Hey {arg}! Nice to see you!")
-        else:
-            self.printline("Hello there!")
+    def do_time(self, arg):
+        """Displays the current system time."""
+        self.safe_print("[*] Current Time: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    def do_whoami(self, arg):
+        """Displays the current user."""
+        self.safe_print(f"[*] Current User: {getuser()}")
+
+    def do_sysinfo(self, arg):
+        """Displays system information."""
+        sys_info = f"""
+        [+] System: {platform.system()} {platform.release()}
+        [+] Node Name: {platform.node()}
+        [+] Machine: {platform.machine()}
+        [+] Processor: {platform.processor()}
+        [+] Python Version: {platform.python_version()}
+        """
+        self.safe_print(sys_info.strip())
+
+    def do_clear(self, arg):
+        """Clears the terminal screen."""
+        os.system("cls" if os.name == "nt" else "clear")
+
+    def do_ipconfig(self, arg):
+        """Displays network configuration (Windows) or interfaces (Linux)."""
+        cmd = "ipconfig" if os.name == "nt" else "ip a"
+        os.system(cmd)
+
+    def do_netstat(self, arg):
+        """Displays active network connections."""
+        os.system("netstat -tulnp" if os.name != "nt" else "netstat -ano")
+
+    def do_ping(self, arg):
+        """Pings a specified host (Usage: ping <host>)."""
+        if not arg:
+            self.safe_print("Usage: ping <host>")
+            return
+        os.system(f"ping -c 4 {arg}" if os.name != "nt" else f"ping {arg}")
+
+    def do_traceroute(self, arg):
+        """Traces the route to a host (Usage: traceroute <host>)."""
+        if not arg:
+            self.safe_print("Usage: traceroute <host>")
+            return
+        os.system(f"traceroute {arg}" if os.name != "nt" else f"tracert {arg}")
+
+    def do_hostname(self, arg):
+        """Displays the hostname and local IP."""
+        os.system("hostname -I" if os.name != "nt" else "ipconfig | findstr IPv4")
+
+    def do_df(self, arg):
+        """Displays disk space usage."""
+        os.system("df -h" if os.name != "nt" else "wmic logicaldisk get size,freespace,caption")
+
+    def do_free(self, arg):
+        """Displays memory usage."""
+        os.system("free -m" if os.name != "nt" else "wmic OS get FreePhysicalMemory,TotalVisibleMemorySize")
+
+    def do_uptime(self, arg):
+        """Displays system uptime and load."""
+        os.system("uptime" if os.name != "nt" else "wmic os get lastbootuptime")
+
+    def do_ps(self, arg):
+        """Displays currently running processes."""
+        os.system("ps aux" if os.name != "nt" else "tasklist")
+
+    def do_top(self, arg):
+        """Displays system resource usage."""
+        os.system("top" if os.name != "nt" else "wmic process get name,executablepath,processid")
 
     def do_bye(self, arg):
-        """Exit the shell."""
-        self.printline("See you later!")
-        return True
+        """Exits the shell."""
+        self.safe_print("[+] Exiting... See you next time!")
+        return True  # Exits the loop
 
     def emptyline(self):
-        """Handle empty input."""
-        self.print("\r\n")
-
+        """Handles empty input (prevents repeating last command)."""
+        pass
 
 class ServerBase(ABC):
     """Base class for server implementations."""
@@ -130,8 +197,12 @@ class SshServerInterface(paramiko.ServerInterface):
         return paramiko.AUTH_FAILED
 
     def get_banner(self):
-        return ("Welcome to SSH Server Interface", "en-US \r\n")
+        return ("Welcome to SSH Server Interface", "en-US \n")
 
+    def check_channel_window_change_request(self, channel, width, height, pixelwidth, pixelheight):
+        # Handle terminal resizing
+        logger.info(f"Terminal resized to {width}x{height}")
+        return True
 
 class SshServer(ServerBase):
     """SSH server implementation."""
