@@ -2,8 +2,8 @@
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/ssh-server.git
-   cd ssh-server
+   https://github.com/b0yx/SSHTrap.git  
+   cd SSHTrap
    ```
 
 2. **Install Dependencies**:
@@ -23,7 +23,7 @@
    host_key_file: host_key
    username: admin
    password: password123
-   address: 0.0.0.0
+   address: 127.0.0.1
    port: 22
    ```
 
@@ -67,7 +67,7 @@ Manage server settings in the `config.yaml` file:
 - `host_key_file`: Path to the RSA host key.
 - `username`: Client authentication username.
 - `password`: Client authentication password.
-- `address`: Server bind address (default: `0.0.0.0`).
+- `address`: Server bind address (default: `127.0.0.1`).
 - `port`: Listening port (default: `22`).
 
 ## Logging
