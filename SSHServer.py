@@ -138,7 +138,7 @@ class ServerBase(ABC):
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
 
-            if platform == "linux" or platform == "linux2":
+            if platform.system().lower() in ["linux", "linux2"]:
                 self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, True)
 
             self._socket.settimeout(timeout)
