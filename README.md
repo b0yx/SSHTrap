@@ -19,10 +19,11 @@
 
 4. **Create Configuration File**:
    Set up a `config.yaml` file with the following content:
+   **Note that you can set it you like.**
    ```yaml
    host_key_file: host_key
    username: admin
-   password: password123
+   password: admin
    address: 127.0.0.1
    port: 22
    ```
