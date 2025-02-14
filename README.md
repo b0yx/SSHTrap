@@ -1,4 +1,4 @@
-# Professional SSH Server
+# Simple SSH Server
 
 1. **Clone the Repository**:
    ```bash
